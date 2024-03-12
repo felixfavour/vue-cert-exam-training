@@ -9,7 +9,7 @@ const props = defineProps({
     required: true,
   },
 });
-const user = ref(props.user);
+const user = ref({...props.user});
 const update = () => {
   emit("update", { ...unref(user) });
 };
