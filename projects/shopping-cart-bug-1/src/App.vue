@@ -13,9 +13,7 @@ const products = ref([
 ]);
 
 const total = computed(() => {
-  return Math.round(
-    products.value.reduce((acc, product) => acc + product.price, 0) / 100
-  );
+  return products.value.reduce((acc, product) => acc + (product.price * product.quantity), 0) / 100
 });
 
 function increaseQuantity(product) {
@@ -25,6 +23,10 @@ function increaseQuantity(product) {
 function decreaseQuantity(product) {
   product.quantity -= 1;
 }
+
+function formatPrice (price) {
+  return Number(price).toFixed(2)
+} 
 </script>
 <template>
   <div
@@ -47,6 +49,7 @@ function decreaseQuantity(product) {
               <button
                 class="bg-blue-400 hover:bg-blue-600 py-1 px-2 rounded-md"
                 @click="decreaseQuantity(product)"
+                :disabled="product.quantity === 0"
               >
                 -
               </button>
@@ -59,14 +62,14 @@ function decreaseQuantity(product) {
               </button>
             </span>
             <span class="w-16 text-right">
-              ${{ (product.price * product.quantity) / 100 }}
+              ${{ formatPrice((product.price * product.quantity) / 100) }}
             </span>
           </span>
         </li>
       </ul>
       <p class="flex items-center justify-between text-3xl mt-4 p-8">
         <span>Total:</span>
-        <span class="font-bold">${{ total }}</span>
+        <span class="font-bold">${{ formatPrice(total) }}</span>
       </p>
     </div>
   </div>
