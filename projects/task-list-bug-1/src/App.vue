@@ -8,11 +8,11 @@ let tasks = reactive([
   { id: 3, name: "Task 3" },
 ]);
 const addTask = () => {
-  const newTask = { id: Math.random(), name: `Task ${tasks.value.length + 1}` };
-  tasks.value.push(newTask);
+  const newTask = { id: Math.random(), name: `Task ${tasks.length + 1}` };
+  tasks.push(newTask);
 };
 const removeTask = (id) => {
-  tasks = tasks.value.filter((task) => task.id !== id);
+  tasks.splice(tasks.findIndex((task) => task.id !== id), 1)
 };
 </script>
 <template>
