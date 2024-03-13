@@ -1,129 +1,110 @@
 <script setup>
-import { ref, computed } from "vue";
+import {ref} from 'vue'
+  const boxes = ref([
+    { index: 1, X: 0, O: 0 },
+    { index: 2, X: 0, O: 0 },
+    { index: 3, X: 0, O: 0 },
+    { index: 4, X: 0, O: 0 },
+    { index: 5, X: 0, O: 0 },
+    { index: 6, X: 0, O: 0 },
+    { index: 7, X: 0, O: 0 },
+    { index: 8, X: 0, O: 0 },
+    { index: 9, X: 0, O: 0 },
+  ])
 
-const player = ref("X");
-const board = ref([
-  ["", "", ""],
-  ["", "", ""],
-  ["", "", ""],
-]);
+  const possibleWinningPatterns = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+    [1, 4, 7],
+    [2, 5, 8],
+    [3, 6, 9],
+    [1, 5, 9],
+    [3, 5, 7]
+  ]
+  const playerTurn = ref('X')
+  const winner = ref(null)
 
-const checkRowForSame = (row) => {
-  if (row.filter((i) => i !== "").length) {
-    const threeInRow = row.every((i) => i === row[0]);
-    if (threeInRow) return row[0];
-  }
-  return false;
-};
+  const playATurn = (pos) => {
+    const box = boxes.value.find(box => box.index === pos)
+    if (!box.O && !box.X && !winner.value) {
 
-const threeInRowHorizontally = computed(() => {
-  for (let i = 0; i < board.value.length; i++) {
-    if (checkRowForSame(board.value[i])) {
-      return board.value[i][0];
+    if (playerTurn.value === 'X') {
+      box.X = 1
+      if (hasPlayerWon()) {
+        winner.value = 'X'
+      }
+      playerTurn.value = 'O'
+    } else {
+      box.O = 1
+      if (hasPlayerWon()) {
+        winner.value = 'O'
+      }
+      playerTurn.value = 'X'
+    }
     }
   }
-  return false;
-});
 
-const threeInRowVertically = computed(() => {
-  const columns = board.value.reduce(
-    (result, row) =>
-      row.map((value, index) => (result[index] || []).concat(value)),
-    []
-  );
-  for (let i = 0; i < columns.length; i++) {
-    if (checkRowForSame(columns[i])) {
-      return columns[i][0];
+  const restartGame = () => {
+    winner.value = null
+    boxes.value = [
+    { index: 1, X: 0, O: 0 },
+    { index: 2, X: 0, O: 0 },
+    { index: 3, X: 0, O: 0 },
+    { index: 4, X: 0, O: 0 },
+    { index: 5, X: 0, O: 0 },
+    { index: 6, X: 0, O: 0 },
+    { index: 7, X: 0, O: 0 },
+    { index: 8, X: 0, O: 0 },
+    { index: 9, X: 0, O: 0 },
+  ]
+  playerTurn.value = 'X'
+  }
+
+  const hasPlayerWon = () => {
+    // Check if player has won
+    for (const pattern of possibleWinningPatterns) {
+      const playerMoves = boxes.value?.filter(box => box[playerTurn.value] === 1)?.map(box => box.index)
+      const isWinner = pattern.every((value) => playerMoves.includes(value))
+      if (isWinner) {
+        return isWinner
+      } 
     }
   }
-  return false;
-});
-
-const threeInRowDiagonally = computed(() => {
-  const leftToRight = checkRowForSame([
-    board.value[0][0],
-    board.value[1][1],
-    board.value[2][2],
-  ]);
-  if (leftToRight) return leftToRight;
-
-  const righToLeft = checkRowForSame([
-    board.value[0][2],
-    board.value[1][1],
-    board.value[2][0],
-  ]);
-
-  if (righToLeft) return righToLeft;
-
-  return false;
-});
-
-const winner = computed(() => {
-  return (
-    threeInRowHorizontally.value ||
-    threeInRowVertically.value ||
-    threeInRowDiagonally.value ||
-    null
-  );
-});
-
-const move = (x, y) => {
-  if (winner.value || board.value[x][y] !== "") return;
-  board.value[x][y] = player.value;
-  player.value = player.value === "X" ? "O" : "X";
-};
-
-const reset = () => {
-  board.value = [
-    ["", "", ""],
-    ["", "", ""],
-    ["", "", ""],
-  ];
-  player.value = "X";
-};
-
-const isTie = computed(() => {
-  return !board.value.flat().includes("") && !winner.value;
-});
-
-const isOver = computed(() => {
-  return winner.value || isTie.value;
-});
 </script>
-
 <template>
-  <main class="h-screen pt-16 text-center dark:bg-gray-800 dark:text-white">
-    <h1 class="mb-3 text-3xl font-bold">Tic-Tac-Toe</h1>
+  <div class="center grid place-items-center h-[100vh]">
 
-    <h3 v-if="!isOver" class="mb-4 text-xl">Player {{ player }}'s turn</h3>
-    <div v-else>
-      <h3 v-if="winner" class="mb-8 text-6xl font-bold">
-        Player '{{ winner }}' wins!``
-      </h3>
-      <h3 v-if="isTie" class="mb-8 text-6xl font-bold">Cat Got It!</h3>
-      <button
-        @click="reset"
-        class="inline-block p-3 px-2 mb-8 bg-blue-700 rounded"
-      >
-        New Game
-      </button>
-    </div>
+<div class="grid-child text-center">
+  <div class="text-white text-md mb-4">
+    Player {{ playerTurn }}'s turn
+  </div>
+  <div class="boxes max-w-[150px] flex flex-wrap">
+    <button 
+      v-for="box in boxes" 
+      :key="box.index" class="h-[50px] w-[50px] border-white border grid items-center text-white" 
+      @click="playATurn(box.index)">
+      <span v-if="box.O" class="text-bold text-xl text-green-400">
+        O
+      </span>
+      <span v-else-if="box.X" class="text-bold text-xl text-orange-400">
+        X
+      </span>
+    </button>
+  </div>
+  <div v-if="winner" class="winner-ctn">
+  <h2 class="text-white mt-4">
+    
+      <span v-show="winner === 'O'" class="text-bold text-xl text-green-400">
+        O
+      </span>
+      <span v-show="winner === 'X'" class="text-bold text-xl text-orange-400">
+        X
+      </span> 
+      Wins</h2>
 
-    <div class="flex flex-col items-center mb-8">
-      <div v-for="(row, x) in board" :key="x" class="flex">
-        <button
-          v-for="(cell, y) in row"
-          :key="y"
-          @click="move(x, y)"
-          class="flex items-center justify-center w-24 h-24 text-5xl border border-white cursor-pointer"
-          :class="{
-            'text-lime-600': cell === 'X',
-            'text-orange-500': cell === 'O',
-          }"
-        >
-          {{ cell }}
-        </button>
-      </div>
-    </div>
-  </main>
+      <button class="bg-white px-2 rounded-lg mt-4" @click="restartGame">New Game</button>
+  </div>
+</div>
+  </div>
 </template>
